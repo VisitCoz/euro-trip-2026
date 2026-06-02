@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Euro Trip 2026 — Hub</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--border:#30363d;
+    --text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;
+    --ok:#22c55e;--warn:#f59e0b;--error:#ef4444;
+    --iberia:#ff8a3d;--swiss:#e0564a;--london:#ed5565;--swe:#4d9bf5;--paris:#3dd6c4;
+    --nature:#34d399;--classic:#c084fc;
+  }
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.55;padding:24px 20px 64px;max-width:1180px;margin:0 auto}
+  a{color:var(--accent);text-decoration:none}
+  b{color:var(--text);font-weight:700}
+
+  .header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+  .header h1{font-size:24px;font-weight:700;letter-spacing:-.4px}
+  .header h1::before{content:"🗺️ "}
+  .header p{color:var(--muted);font-size:13px;margin-top:4px}
+  .toggle-wrap{text-align:right}
+  .toggle-cap{font-size:12px;font-weight:800;color:#ef4444;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+  .toggle{display:inline-flex;border:3px solid #ef4444;border-radius:26px;overflow:hidden;background:var(--surface);box-shadow:0 0 0 4px rgba(239,68,68,.20)}
+  .toggle button{background:transparent;border:none;color:#ef4444;font-weight:800;font-size:15px;letter-spacing:.4px;padding:11px 24px;cursor:pointer;transition:.15s}
+  .toggle button.on{background:#ef4444;color:#fff}
+  .opt.skipcard{border-style:dashed;border-color:#34d399}
+  .opt.skipcard.sel{border-color:#34d399;box-shadow:0 0 0 2px rgba(52,211,153,.3),0 8px 24px rgba(8,20,35,.55)}
+  .opt.skipcard .nm{color:#6ee7a0}
+
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .badge{background:#1d3052;border:1px solid #3b82f6;color:#93c5fd;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+  .badge.ok{background:#0f2e1c;border-color:#1f7a44;color:#6ee7a0}
+
+  .grid{display:grid;gap:14px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:22px 0}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:15px}
+  .kpi .v{font-size:21px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .kpi .l{color:var(--muted);font-size:12px;margin-top:2px}
+
+  section{margin-bottom:30px}
+  h2{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:14px}
+
+  .people{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}
+  .person{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .person .nm{font-weight:700;font-size:14.5px}
+  .person .ro{color:var(--muted);font-size:12px;margin:2px 0 8px}
+  .person .d{color:var(--muted);font-size:12.5px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
+
+  .flight{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+  .flight.f1{border-left-color:var(--iberia)}.flight.f2{border-left-color:var(--london)}
+  .flight.f3{border-left-color:var(--london)}.flight.f4{border-left-color:var(--paris)}
+  .flight-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:baseline}
+  .route{font-size:17px;font-weight:700;letter-spacing:-.3px}
+  .route .arr{color:var(--muted);margin:0 7px;font-weight:400}
+  .carrier{font-size:11.5px;font-weight:600;color:var(--muted)}
+  .legrow{display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+  .legrow b{color:var(--text)}
+  .pax{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .pax .p{font-size:11px;padding:3px 9px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+  .tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.3px}
+  .tag.nobag{background:#3a2a12;color:var(--warn)}.tag.bag{background:#0f2e1c;color:var(--ok)}
+  .tag.inf{background:#2a2440;color:#c4b5fd}.tag.nr{background:#2a1d1d;color:#ff9a9a}
+
+  .strip{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px}
+  .strip .stop{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:5px 12px;font-weight:600}
+  .strip .stop.mid{border-style:dashed;color:var(--accent);border-color:var(--accent)}
+  .strip .ar{color:var(--muted)}
+
+  .phase{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+  .phase.iberia{border-left-color:var(--iberia)}.phase.swiss{border-left-color:var(--swiss)}
+  .phase.london{border-left-color:var(--london)}.phase.swe{border-left-color:var(--swe)}
+  .phase.paris{border-left-color:var(--paris)}
+  .ph-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:baseline;padding:13px 16px;cursor:pointer;user-select:none}
+  .ph-head .t{font-size:16px;font-weight:700}
+  .ph-head .t .caret{color:var(--muted);font-size:12px;margin-right:7px;display:inline-block;transition:.2s}
+  .ph-head .meta{font-size:12px;color:var(--muted)}
+  .ph-head .nights{color:var(--accent);font-weight:600}
+  .phase.collapsed .day-list{display:none}
+  .phase.collapsed .caret{transform:rotate(-90deg)}
+  .day{display:flex;gap:13px;padding:8px 16px;border-top:1px solid var(--border);font-size:12.8px}
+  .day .dt{flex:0 0 96px;color:var(--muted);font-weight:600}
+  .day .ds{flex:1}.day .ds b{color:var(--text)}
+  .pl{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);margin-left:6px}
+  .subhdr{padding:9px 16px;border-top:1px solid var(--border);background:#1a1411;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#ffb38a}
+
+  .explain{color:var(--muted);font-size:12.5px;margin-bottom:12px}
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:12px}
+  .opt{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:.18s;position:relative}
+  .opt:hover{border-color:#4d6075;transform:translateY(-2px);box-shadow:0 8px 22px rgba(8,20,35,.5)}
+  .opt.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(88,166,255,.25),0 8px 24px rgba(8,20,35,.55)}
+  .opt .on-tag{position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;color:var(--accent);opacity:0;transition:.15s}
+  .opt.sel .on-tag{opacity:1}
+  .opt .nm{font-size:15px;font-weight:700;padding-right:54px}
+  .vibes{display:flex;gap:5px;margin:7px 0}
+  .vibe{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px}
+  .vibe.nat{background:#0c2a20;color:var(--nature)}.vibe.cla{background:#221033;color:var(--classic)}
+  .opt .ln{font-size:12px;color:var(--muted);margin:4px 0}
+  .opt .ln b{color:var(--text)}
+  .stars{letter-spacing:1px;font-size:12px}
+  .stars .f{color:#fbbf24}.stars .e{color:#3a3f47}
+  .opt .see{font-size:11.5px;color:var(--muted);margin-top:6px}
+  .opt .why{font-size:11.5px;color:#9fb4c9;margin-top:6px;font-style:italic}
+  .opt .tt{font-size:11px;color:var(--muted);margin-top:7px;border-top:1px solid var(--border);padding-top:7px}
+  .opt .tt .pin{color:var(--accent)}
+
+  .routebox{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:14px}
+  .routebox .rt{font-size:14px;font-weight:700}
+  .routebox .tot{font-size:12.5px;color:var(--muted);margin-top:5px}
+  .routebox .tot b{color:var(--accent);font-variant-numeric:tabular-nums}
+  .routebox .nb{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic}
+
+  table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:9px 13px;text-align:left;font-size:12.8px;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.5px;background:var(--surface2)}
+  tbody tr{transition:.12s}tbody tr:hover{background:var(--surface2)}
+  tr:last-child td{border-bottom:none}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+
+  .dual{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:760px){.dual{grid-template-columns:1fr}}
+  .col{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;border-top:3px solid var(--border)}
+  .col.classic{border-top-color:var(--classic)}.col.nature{border-top-color:var(--nature)}
+  .col h3{font-size:13px;font-weight:700;margin-bottom:9px}
+  .col ul{list-style:none}.col li{font-size:12.5px;color:var(--muted);padding:4px 0;padding-left:16px;position:relative}
+  .col li::before{content:"•";position:absolute;left:2px;color:var(--muted)}
+
+  .check{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:6px 4px}
+  .check li{list-style:none;display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12.8px}
+  .check li:last-child{border-bottom:none}
+  .check .box{width:16px;height:16px;border:1.5px solid var(--muted);border-radius:4px;flex-shrink:0;margin-top:1px}
+  .check .who{margin-left:auto;font-size:11px;color:var(--muted);white-space:nowrap}
+
+  .foot{color:var(--muted);font-size:11px;text-align:center;margin-top:28px;border-top:1px solid var(--border);padding-top:16px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1 data-en="Euro Trip 2026" data-es="Viaje a Europa 2026">Euro Trip 2026</h1>
+    <p data-en="One family, two journeys · Cancún ⇄ Europe · 23 Jun – 22 Jul 2026"
+       data-es="Una familia, dos viajes · Cancún ⇄ Europa · 23 jun – 22 jul 2026">One family, two journeys · Cancún ⇄ Europe · 23 Jun – 22 Jul 2026</p>
+    <div class="badges">
+      <span class="badge">📅 23 Jun – 22 Jul</span>
+      <span class="badge">👥 <span data-en="5 travelers (1 baby)" data-es="5 viajeros (1 bebé)">5 travelers (1 baby)</span></span>
+      <span class="badge ok"><span data-en="Pick a flight getaway below ↓" data-es="Elige una escapada en avión abajo ↓">Pick a flight getaway below ↓</span></span>
+    </div>
+  </div>
+  <div class="toggle-wrap">
+    <div class="toggle-cap">🌐 Idioma · Language</div>
+    <div class="toggle">
+      <button id="btn-en" class="on" onclick="setLang('en')">ENGLISH</button>
+      <button id="btn-es" onclick="setLang('es')">ESPAÑOL</button>
+    </div>
+  </div>
+</div>
+
+<div class="grid kpis">
+  <div class="kpi"><div class="v">29</div><div class="l" data-en="Days (Mom, longest)" data-es="Días (mamá, máx.)">Days (Mom, longest)</div></div>
+  <div class="kpi"><div class="v">4</div><div class="l" data-en="Flights booked · 3 airlines" data-es="Vuelos reservados · 3 aerolíneas">Flights booked · 3 airlines</div></div>
+  <div class="kpi"><div class="v">2</div><div class="l" data-en="Journeys (parents · family)" data-es="Viajes (papás · familia)">Journeys (parents · family)</div></div>
+  <div class="kpi"><div class="v">6</div><div class="l" data-en="Getaways to compare" data-es="Escapadas para comparar">Getaways to compare</div></div>
+</div>
+
+<!-- TRAVELERS -->
+<section>
+  <h2 data-en="Who's traveling — two Miguel Ángels" data-es="Quiénes viajan — dos Miguel Ángel">Who's traveling — two Miguel Ángels</h2>
+  <div class="people">
+    <div class="person"><div class="nm"><span class="dot" style="background:#a78bfa"></span>Miguel Á. Burgos Tejero</div>
+      <div class="ro" data-en="Dad · adult" data-es="Papá · adulto">Dad · adult</div>
+      <div class="d" data-en="Madrid in (23 Jun) → London out (10 Jul). Home early." data-es="Llega a Madrid (23 jun) → sale de Londres (10 jul). Regresa antes.">Madrid in (23 Jun) → London out (10 Jul). Home early.</div></div>
+    <div class="person"><div class="nm"><span class="dot" style="background:var(--iberia)"></span>Patricia García Reinoso</div>
+      <div class="ro" data-en="Mom · adult" data-es="Mamá · adulto">Mom · adult</div>
+      <div class="d" data-en="Madrid in (23 Jun) → Paris out (22 Jul). Longest stay." data-es="Llega a Madrid (23 jun) → sale de París (22 jul). Estancia más larga.">Madrid in (23 Jun) → Paris out (22 Jul). Longest stay.</div></div>
+    <div class="person"><div class="nm"><span class="dot" style="background:var(--accent)"></span>Miguel Á. Burgos García</div>
+      <div class="ro" data-en="You · adult · lead" data-es="Tú · adulto · titular">You · adult · lead</div>
+      <div class="d" data-en="London in (7 Jul) → Paris out (22 Jul)." data-es="Llega a Londres (7 jul) → sale de París (22 jul).">London in (7 Jul) → Paris out (22 Jul).</div></div>
+    <div class="person"><div class="nm"><span class="dot" style="background:#ec4899"></span>Emma Linnea Magnusson</div>
+      <div class="ro" data-en="Partner · adult" data-es="Pareja · adulto">Partner · adult</div>
+      <div class="d" data-en="With you. Family is from Helsingborg, Sweden." data-es="Contigo. Su familia es de Helsingborg, Suecia.">With you. Family is from Helsingborg, Sweden.</div></div>
+    <div class="person"><div class="nm"><span class="dot" style="background:#c4b5fd"></span>Leo Burgos Magnusson</div>
+      <div class="ro" data-en="Son · baby ~5 mo · lap" data-es="Hijo · bebé ~5 meses · en brazos">Son · baby ~5 mo · lap</div>
+      <div class="d" data-en="With you & Emma. Carry birth certificate." data-es="Contigo y Emma. Llevar acta de nacimiento.">With you & Emma. Carry birth certificate.</div></div>
+  </div>
+</section>
+
+<!-- FLIGHTS -->
+<section>
+  <h2 data-en="✈️ The 4 booked flights" data-es="✈️ Los 4 vuelos reservados">✈️ The 4 booked flights</h2>
+
+  <div class="flight f1">
+    <div class="flight-top"><div class="route">CUN <span class="arr">→</span> MAD</div><span class="carrier">Air Europa · UX64 · 783ANJ</span></div>
+    <div class="legrow"><span data-en="<b>Tue 23 Jun</b> 20:40 → <b>Wed 24 Jun</b> 13:10" data-es="<b>mar 23 jun</b> 20:40 → <b>mié 24 jun</b> 13:10"><b>Tue 23 Jun</b> 20:40 → <b>Wed 24 Jun</b> 13:10</span><span><b>9h 30m</b></span></div>
+    <div class="pax"><span class="p" data-en="Dad" data-es="Papá">Dad</span><span class="p" data-en="Mom" data-es="Mamá">Mom</span><span class="tag nobag" data-en="No checked bag" data-es="Sin maleta">No checked bag</span><span class="tag nr" data-en="Non-refundable" data-es="No reembolsable">Non-refundable</span></div>
+  </div>
+
+  <div class="flight f2">
+    <div class="flight-top"><div class="route">CUN <span class="arr">→</span> LGW</div><span class="carrier">TUI · TOM049 · 32473409</span></div>
+    <div class="legrow"><span data-en="<b>Tue 7 Jul</b> 15:40 → <b>Wed 8 Jul</b> 07:05" data-es="<b>mar 7 jul</b> 15:40 → <b>mié 8 jul</b> 07:05"><b>Tue 7 Jul</b> 15:40 → <b>Wed 8 Jul</b> 07:05</span><span data-en="London Gatwick" data-es="Londres Gatwick">London Gatwick</span></div>
+    <div class="pax"><span class="p" data-en="You" data-es="Tú">You</span><span class="p">Emma</span><span class="p" data-en="Leo (baby)" data-es="Leo (bebé)">Leo (baby)</span><span class="tag bag" data-en="25 kg each" data-es="25 kg c/u">25 kg each</span></div>
+  </div>
+
+  <div class="flight f3">
+    <div class="flight-top"><div class="route">LGW <span class="arr">→</span> CUN</div><span class="carrier">TUI · TOM064 · 32500177</span></div>
+    <div class="legrow"><span data-en="<b>Fri 10 Jul</b> 10:00 → 14:25" data-es="<b>vie 10 jul</b> 10:00 → 14:25"><b>Fri 10 Jul</b> 10:00 → 14:25</span><span data-en="Dad home early" data-es="Papá regresa antes">Dad home early</span></div>
+    <div class="pax"><span class="p" data-en="Dad (solo)" data-es="Papá (solo)">Dad (solo)</span><span class="tag nobag" data-en="Hand only" data-es="Solo de mano">Hand only</span></div>
+  </div>
+
+  <div class="flight f4">
+    <div class="flight-top"><div class="route">ORY <span class="arr">→</span> CUN</div><span class="carrier">Air Caraïbes · TX648 · 7RSXUH</span></div>
+    <div class="legrow"><span data-en="<b>Wed 22 Jul</b> 11:40 → 15:35" data-es="<b>mié 22 jul</b> 11:40 → 15:35"><b>Wed 22 Jul</b> 11:40 → 15:35</span><span><b>10h 55m</b></span><span data-en="Paris Orly" data-es="París Orly">Paris Orly</span></div>
+    <div class="pax"><span class="p" data-en="You" data-es="Tú">You</span><span class="p">Emma</span><span class="p" data-en="Mom" data-es="Mamá">Mom</span><span class="p" data-en="Leo (lap)" data-es="Leo (en brazos)">Leo (lap)</span><span class="tag nobag" data-en="No checked bag" data-es="Sin maleta">No checked bag</span></div>
+  </div>
+</section>
+
+<!-- ROUTE STRIP -->
+<section>
+  <h2 data-en="🧭 The route" data-es="🧭 La ruta">🧭 The route</h2>
+  <div class="strip">
+    <span class="stop">Madrid</span><span class="ar">→</span>
+    <span class="stop">Burgos</span><span class="ar">→</span>
+    <span class="stop">Lisboa</span><span class="ar">→</span>
+    <span class="stop">Fátima/Nazaré</span><span class="ar">→</span>
+    <span class="stop">Switzerland</span><span class="ar">→</span>
+    <span class="stop">London</span><span class="ar">→</span>
+    <span class="stop">Helsingborg</span><span class="ar">→</span>
+    <span class="stop mid" id="strip-mid" data-en="? getaway" data-es="? escapada">? getaway</span><span class="ar">→</span>
+    <span class="stop">Paris</span>
+  </div>
+</section>
+
+<!-- PARENTS LEG -->
+<section>
+  <h2 data-en="🇪🇸 Parents' journey — Spain, Portugal & Switzerland" data-es="🇪🇸 Viaje de los papás — España, Portugal y Suiza">🇪🇸 Parents' journey — Spain, Portugal & Switzerland</h2>
+  <div class="phase iberia" id="ph-iberia">
+    <div class="ph-head" onclick="togglePhase('ph-iberia')">
+      <div class="t"><span class="caret">▼</span><span data-en="Dad + Mom together" data-es="Papá + Mamá juntos">Dad + Mom together</span></div>
+      <div class="meta"><span class="nights">23 Jun – 8 Jul</span> · <span data-en="all of Mom's wish list ✓" data-es="toda la lista de la mamá ✓">all of Mom's wish list ✓</span></div>
+    </div>
+    <div class="day-list">
+      <div class="day"><div class="dt" data-en="Wed 24 Jun" data-es="mié 24 jun">Wed 24 Jun</div><div class="ds" data-en="Land Madrid 13:10 — settle in, easy evening (Plaza Mayor)" data-es="Llegada a Madrid 13:10 — instalarse, tarde tranquila (Plaza Mayor)">Land Madrid 13:10 — settle in, easy evening (Plaza Mayor)<span class="pl">Madrid</span></div></div>
+      <div class="day"><div class="dt" data-en="Thu 25 Jun" data-es="jue 25 jun">Thu 25 Jun</div><div class="ds" data-en="Madrid — Prado, Retiro park, Royal Palace" data-es="Madrid — Prado, parque del Retiro, Palacio Real">Madrid — Prado, Retiro park, Royal Palace<span class="pl">Madrid</span></div></div>
+      <div class="day"><div class="dt" data-en="Fri 26 Jun" data-es="vie 26 jun">Fri 26 Jun</div><div class="ds" data-en="Optional day trip to Toledo, or more Madrid" data-es="Opcional: excursión a Toledo, o más Madrid">Optional day trip to Toledo, or more Madrid<span class="pl">Madrid</span></div></div>
+      <div class="day"><div class="dt" data-en="Sat 27 Jun" data-es="sáb 27 jun">Sat 27 Jun</div><div class="ds" data-en="Day trip to <b>Burgos</b> by AVE (~1h45) — the Gothic cathedral (the family name!)" data-es="Excursión a <b>Burgos</b> en AVE (~1h45) — la catedral gótica (¡el apellido!)">Day trip to <b>Burgos</b> by AVE (~1h45) — the Gothic cathedral (the family name!)<span class="pl">Burgos</span></div></div>
+      <div class="day"><div class="dt" data-en="Sun 28 Jun" data-es="dom 28 jun">Sun 28 Jun</div><div class="ds" data-en="Fly Madrid → Lisbon (~1h20), settle in" data-es="Vuelo Madrid → Lisboa (~1h20), instalarse">Fly Madrid → Lisbon (~1h20), settle in<span class="pl">Lisboa</span></div></div>
+      <div class="day"><div class="dt" data-en="Mon 29 Jun" data-es="lun 29 jun">Mon 29 Jun</div><div class="ds" data-en="Lisbon — Belém (Jerónimos, Pastéis de Belém), Alfama, Tram 28" data-es="Lisboa — Belém (Jerónimos, Pastéis de Belém), Alfama, Tranvía 28">Lisbon — Belém (Jerónimos, Pastéis de Belém), Alfama, Tram 28<span class="pl">Lisboa</span></div></div>
+      <div class="day"><div class="dt" data-en="Tue 30 Jun" data-es="mar 30 jun">Tue 30 Jun</div><div class="ds" data-en="<b>Fátima + Nazaré + Óbidos</b> full-day tour (pilgrimage + coast + walled town)" data-es="Tour de día completo <b>Fátima + Nazaré + Óbidos</b> (santuario + costa + villa amurallada)"><b>Fátima + Nazaré + Óbidos</b> full-day tour (pilgrimage + coast + walled town)<span class="pl" data-en="day trip" data-es="excursión">day trip</span></div></div>
+      <div class="day"><div class="dt" data-en="Wed 1 Jul" data-es="mié 1 jul">Wed 1 Jul</div><div class="ds" data-en="Optional Sintra (Pena Palace) or Cascais beach" data-es="Opcional: Sintra (Palacio da Pena) o playa de Cascais">Optional Sintra (Pena Palace) or Cascais beach<span class="pl">Lisboa</span></div></div>
+    </div>
+    <div class="subhdr" data-en="🇨🇭 Switzerland — added for the parents" data-es="🇨🇭 Suiza — agregado para los papás">🇨🇭 Switzerland — added for the parents</div>
+    <div class="day-list">
+      <div class="day"><div class="dt" data-en="Thu 2 Jul" data-es="jue 2 jul">Thu 2 Jul</div><div class="ds" data-en="Fly Lisbon → Zurich (~2h50)" data-es="Vuelo Lisboa → Zúrich (~2h50)">Fly Lisbon → Zurich (~2h50)<span class="pl">Switzerland</span></div></div>
+      <div class="day"><div class="dt" data-en="Fri 3 – Sun 6 Jul" data-es="vie 3 – dom 6 jul">Fri 3 – Sun 6 Jul</div><div class="ds" data-en="Lucerne + Lake region — Mt Pilatus/Rigi, lake boat; Interlaken/Jungfrau. Slow, scenic days" data-es="Lucerna + región de los lagos — Pilatus/Rigi, paseo en barco; Interlaken/Jungfrau. Días tranquilos y panorámicos">Lucerne + Lake region — Mt Pilatus/Rigi, lake boat; Interlaken/Jungfrau. Slow, scenic days<span class="pl">Switzerland</span></div></div>
+      <div class="day"><div class="dt" data-en="Mon 7 Jul" data-es="lun 7 jul">Mon 7 Jul</div><div class="ds" data-en="More Switzerland at an easy pace — Lake Geneva or a mountain valley" data-es="Más Suiza con calma — Lago de Ginebra o un valle de montaña">More Switzerland at an easy pace — Lake Geneva or a mountain valley<span class="pl">Switzerland</span></div></div>
+      <div class="day"><div class="dt" data-en="Tue 8 Jul" data-es="mar 8 jul">Tue 8 Jul</div><div class="ds" data-en="Fly Zurich → London (~1h50) — arrive in the afternoon, after you've checked in" data-es="Vuelo Zúrich → Londres (~1h50) — llegan por la tarde, después de que tú hiciste el check-in">Fly Zurich → London (~1h50) — arrive in the afternoon, after you've checked in<span class="pl">London</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LONDON -->
+<section>
+  <h2 data-en="🇬🇧 London — the reunion" data-es="🇬🇧 Londres — el reencuentro">🇬🇧 London — the reunion</h2>
+  <div class="phase london" id="ph-london">
+    <div class="ph-head" onclick="togglePhase('ph-london')">
+      <div class="t"><span class="caret">▼</span><span data-en="Everyone together (Dad leaves 10 Jul)" data-es="Todos juntos (papá se va el 10 jul)">Everyone together (Dad leaves 10 Jul)</span></div>
+      <div class="meta"><span class="nights">8 – 12 Jul</span> · <span data-en="4 family nights" data-es="4 noches en familia">4 family nights</span></div>
+    </div>
+    <div class="day-list">
+      <div class="day"><div class="dt" data-en="Wed 8 Jul" data-es="mié 8 jul">Wed 8 Jul</div><div class="ds" data-en="You, Emma & Leo land 07:05 — you check in at the flat. Dad & Mom fly in from Switzerland later today. Easy first day (parks, Thames)" data-es="Tú, Emma y Leo llegan 07:05 — tú haces el check-in. Papá y mamá llegan de Suiza más tarde hoy. Primer día tranquilo (parques, Támesis)">You, Emma & Leo land 07:05 — you check in at the flat. Dad & Mom fly in from Switzerland later today. Easy first day (parks, Thames)<span class="pl">London</span></div></div>
+      <div class="day"><div class="dt" data-en="Thu 9 Jul" data-es="jue 9 jul">Thu 9 Jul</div><div class="ds" data-en="London highlights for Emma: Westminster/Big Ben, Tower Bridge, a park (stroller-friendly)" data-es="Lo icónico de Londres para Emma: Westminster/Big Ben, Tower Bridge, un parque (apto carriola)">London highlights for Emma: Westminster/Big Ben, Tower Bridge, a park (stroller-friendly)<span class="pl">London</span></div></div>
+      <div class="day"><div class="dt" data-en="Fri 10 Jul" data-es="vie 10 jul">Fri 10 Jul</div><div class="ds" data-en="Dad flies home (Gatwick 10:00). The rest carry on" data-es="Papá vuela a casa (Gatwick 10:00). Los demás continúan">Dad flies home (Gatwick 10:00). The rest carry on<span class="pl">London</span></div></div>
+      <div class="day"><div class="dt" data-en="Sat 11 Jul" data-es="sáb 11 jul">Sat 11 Jul</div><div class="ds" data-en="More London at your own pace — a market, a park, easy with Leo" data-es="Más Londres a su ritmo — un mercado, un parque, fácil con Leo">More London at your own pace — a market, a park, easy with Leo<span class="pl">London</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HELSINGBORG -->
+<section>
+  <h2 data-en="🇸🇪 Helsingborg — Emma's family home" data-es="🇸🇪 Helsingborg — la casa de la familia de Emma">🇸🇪 Helsingborg — Emma's family home</h2>
+  <div class="phase swe" id="ph-swe">
+    <div class="ph-head" onclick="togglePhase('ph-swe')">
+      <div class="t"><span class="caret">▼</span><span data-en="You + Emma + Leo + Mom" data-es="Tú + Emma + Leo + Mamá">You + Emma + Leo + Mom</span></div>
+      <div class="meta"><span class="nights" data-en="12 – 16 Jul · 4 nights" data-es="12 – 16 jul · 4 noches">12 – 16 Jul · 4 nights</span></div>
+    </div>
+    <div class="day-list">
+      <div class="day"><div class="dt" data-en="Sun 12 Jul" data-es="dom 12 jul">Sun 12 Jul</div><div class="ds" data-en="Fly London → Copenhagen (~1h50), cross the Øresund to Helsingborg (~1h). Settle with Emma's family" data-es="Vuelo Londres → Copenhague (~1h50), cruzar el Øresund a Helsingborg (~1h). Con la familia de Emma">Fly London → Copenhagen (~1h50), cross the Øresund to Helsingborg (~1h). Settle with Emma's family<span class="pl">Helsingborg</span></div></div>
+      <div class="day"><div class="dt" data-en="Mon 13 – Wed 15 Jul" data-es="lun 13 – mié 15 jul">Mon 13 – Wed 15 Jul</div><div class="ds" data-en="Relaxed family time + Skåne nature: Kullaberg coast & Mölle, Söderåsen forest & lakes, Sofiero gardens, beaches & harbour. Copenhagen is ~1h away for an easy day. Baby-friendly" data-es="Tiempo en familia + naturaleza de Escania: costa de Kullaberg y Mölle, bosque y lagos de Söderåsen, jardines de Sofiero, playas y puerto. Copenhague a ~1h para un día fácil. Apto para bebé">Relaxed family time + Skåne nature: Kullaberg coast & Mölle, Söderåsen forest & lakes, Sofiero gardens, beaches & harbour. Copenhagen is ~1h away for an easy day. Baby-friendly<span class="pl">Helsingborg</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPLORER -->
+<section>
+  <h2 data-en="🎯 Pick one flight getaway (tap to compare)" data-es="🎯 Elige una escapada en avión (toca para comparar)">🎯 Pick one flight getaway (tap to compare)</h2>
+  <p class="explain" data-en="From Helsingborg you fly out of <b>Copenhagen (CPH)</b> — ~1h away. Tap a getaway to compare it, or tap the green <b>“No getaway”</b> card for the most comfortable plan (London–Helsingborg–Paris, with an extra night each in Helsingborg &amp; Paris). The route &amp; total flight time update below. ★ = baby-friendliness for Leo."
+     data-es="Desde Helsingborg vuelas por <b>Copenhague (CPH)</b> — a ~1h. Toca una escapada para compararla, o toca la tarjeta verde <b>«Sin escapada»</b> para el plan más cómodo (Londres–Helsingborg–París, con una noche extra en Helsingborg y en París). La ruta y el tiempo de vuelo se actualizan abajo. ★ = qué tan apto para el bebé Leo.">From Helsingborg you fly out of <b>Copenhagen (CPH)</b> — ~1h away. Tap a getaway to compare it, or tap the green <b>“No getaway”</b> card for the most comfortable plan (London–Helsingborg–Paris, with an extra night each in Helsingborg & Paris). The route & total flight time update below. ★ = baby-friendliness for Leo.</p>
+  <div class="opts" id="opts"></div>
+  <div class="routebox">
+    <div class="rt" id="route-line"></div>
+    <div class="tot" id="route-total"></div>
+    <div class="nb" id="route-note"></div>
+  </div>
+</section>
+
+<!-- PARIS -->
+<section>
+  <h2 data-en="🇫🇷 Paris — then home" data-es="🇫🇷 París — y a casa">🇫🇷 Paris — then home</h2>
+  <div class="phase paris" id="ph-paris">
+    <div class="ph-head" onclick="togglePhase('ph-paris')">
+      <div class="t"><span class="caret">▼</span><span data-en="You + Emma + Leo + Mom" data-es="Tú + Emma + Leo + Mamá">You + Emma + Leo + Mom</span></div>
+      <div class="meta"><span class="nights" data-en="18 – 22 Jul · 4 nights" data-es="18 – 22 jul · 4 noches">18 – 22 Jul · 4 nights</span></div>
+    </div>
+    <div class="day-list">
+      <div class="day"><div class="dt" data-en="Sat 18 Jul" data-es="sáb 18 jul">Sat 18 Jul</div><div class="ds" data-en="Fly into Paris from your getaway, settle in" data-es="Vuelo a París desde tu escapada, instalarse">Fly into Paris from your getaway, settle in<span class="pl">Paris</span></div></div>
+      <div class="day"><div class="dt" data-en="Sun 19 – Tue 21 Jul" data-es="dom 19 – mar 21 jul">Sun 19 – Tue 21 Jul</div><div class="ds" data-en="Relaxed Paris with Leo + Emma's must-sees: Eiffel/Trocadéro, Seine, Tuileries, optional Versailles" data-es="París tranquilo con Leo + lo imprescindible para Emma: Torre Eiffel/Trocadéro, Sena, Tullerías, opcional Versalles">Relaxed Paris with Leo + Emma's must-sees: Eiffel/Trocadéro, Seine, Tuileries, optional Versailles<span class="pl">Paris</span></div></div>
+      <div class="day"><div class="dt" data-en="Wed 22 Jul" data-es="mié 22 jul">Wed 22 Jul</div><div class="ds" data-en="Fly home Paris Orly → Cancún 11:40 (everyone)" data-es="Vuelo a casa París Orly → Cancún 11:40 (todos)">Fly home Paris Orly → Cancún 11:40 (everyone)<span class="pl">✈ home</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TIMINGS -->
+<section>
+  <h2 data-en="🎟️ All transport (approx — confirm when booking)" data-es="🎟️ Todo el transporte (aprox — confirmar al reservar)">🎟️ All transport (approx — confirm when booking)</h2>
+  <table>
+    <thead><tr><th data-en="Leg" data-es="Trayecto">Leg</th><th data-en="Mode" data-es="Medio">Mode</th><th data-en="Who" data-es="Quién">Who</th><th class="num" data-en="Time" data-es="Tiempo">Time</th></tr></thead>
+    <tbody>
+      <tr><td>Madrid ⇄ Burgos</td><td data-en="AVE train" data-es="Tren AVE">AVE train</td><td data-en="Dad+Mom" data-es="Papá+Mamá">Dad+Mom</td><td class="num">~1h45</td></tr>
+      <tr><td>Madrid → Lisbon</td><td data-en="Flight" data-es="Vuelo">Flight</td><td data-en="Dad+Mom" data-es="Papá+Mamá">Dad+Mom</td><td class="num">~1h20</td></tr>
+      <tr><td>Lisbon → Zurich</td><td data-en="Flight" data-es="Vuelo">Flight</td><td data-en="Dad+Mom" data-es="Papá+Mamá">Dad+Mom</td><td class="num">~2h50</td></tr>
+      <tr><td>Zurich → London</td><td data-en="Flight" data-es="Vuelo">Flight</td><td data-en="Dad+Mom" data-es="Papá+Mamá">Dad+Mom</td><td class="num">~1h50</td></tr>
+      <tr><td>Cancún → London</td><td data-en="Flight (overnight)" data-es="Vuelo (nocturno)">Flight (overnight)</td><td data-en="You+Emma+Leo" data-es="Tú+Emma+Leo">You+Emma+Leo</td><td class="num">~10–11h</td></tr>
+      <tr><td data-en="London → Copenhagen (for Helsingborg)" data-es="Londres → Copenhague (para Helsingborg)">London → Copenhagen (for Helsingborg)</td><td data-en="Flight + ~1h train" data-es="Vuelo + ~1h tren">Flight + ~1h train</td><td data-en="Family" data-es="Familia">Family</td><td class="num">~1h50</td></tr>
+      <tr id="tr-mid1"><td>Copenhagen → <span class="midname">—</span></td><td data-en="Flight" data-es="Vuelo">Flight</td><td data-en="Family" data-es="Familia">Family</td><td class="num midt1">—</td></tr>
+      <tr id="tr-mid2"><td><span class="midname">—</span> → Paris</td><td data-en="Flight" data-es="Vuelo">Flight</td><td data-en="Family" data-es="Familia">Family</td><td class="num midt2">—</td></tr>
+      <tr><td>Paris → Cancún</td><td data-en="Flight" data-es="Vuelo">Flight</td><td data-en="Family" data-es="Familia">Family</td><td class="num">10h55</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- DUAL DO -->
+<section>
+  <h2 data-en="💡 Must-sees in each place" data-es="💡 Imprescindibles en cada lugar">💡 Must-sees in each place</h2>
+  <div class="col classic">
+    <h3 data-en="🏛 The highlights — for Emma & your parents" data-es="🏛 Lo destacado — para Emma y tus papás">🏛 The highlights — for Emma & your parents</h3>
+    <ul>
+      <li data-en="Madrid — Prado & Royal Palace · Burgos cathedral" data-es="Madrid — Prado y Palacio Real · catedral de Burgos">Madrid — Prado & Royal Palace · Burgos cathedral</li>
+      <li data-en="Lisbon — Belém, Tram 28 · Fátima sanctuary" data-es="Lisboa — Belém, Tranvía 28 · santuario de Fátima">Lisbon — Belém, Tram 28 · Fátima sanctuary</li>
+      <li data-en="Switzerland — Lucerne, Lake & Alps" data-es="Suiza — Lucerna, lago y Alpes">Switzerland — Lucerne, Lake & Alps</li>
+      <li data-en="London — Westminster, Tower Bridge" data-es="Londres — Westminster, Tower Bridge">London — Westminster, Tower Bridge</li>
+      <li data-en="Paris — Eiffel Tower, Seine, Louvre" data-es="París — Torre Eiffel, Sena, Louvre">Paris — Eiffel Tower, Seine, Louvre</li>
+      <li data-en="+ whichever getaway you pick (Amsterdam / Prague / Venice / Rome)" data-es="+ la escapada que elijas (Ámsterdam / Praga / Venecia / Roma)">+ whichever getaway you pick (Amsterdam / Prague / Venice / Rome)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- CHECKLIST -->
+<section>
+  <h2 data-en="✅ Before you go" data-es="✅ Antes de viajar">✅ Before you go</h2>
+  <ul class="check">
+    <li><span class="box"></span><div data-en="Add checked baggage to Air Europa & Air Caraïbes legs" data-es="Agregar maleta documentada a los vuelos Air Europa y Air Caraïbes">Add checked baggage to Air Europa & Air Caraïbes legs</div><span class="who" data-en="All" data-es="Todos">All</span></li>
+    <li><span class="box"></span><div data-en="Request bassinet / bulkhead seat for Leo on both long-hauls (TUI Cancún→London, Air Caraïbes Paris→Cancún) — free & a huge comfort win" data-es="Pedir cuna / asiento de mamparo para Leo en los dos vuelos largos (TUI Cancún→Londres, Air Caraïbes París→Cancún) — gratis y mucho más cómodo">Request bassinet / bulkhead seat for Leo on both long-hauls (TUI Cancún→London, Air Caraïbes Paris→Cancún) — free & a huge comfort win</div><span class="who">Leo</span></li>
+    <li><span class="box"></span><div data-en="Book the intra-Europe trains & flights NOW — peak July, prices rise and seats sell out" data-es="Reservar YA los trenes y vuelos dentro de Europa — temporada alta de julio, suben de precio y se agotan">Book the intra-Europe trains & flights NOW — peak July, prices rise and seats sell out</div><span class="who" data-en="All" data-es="Todos">All</span></li>
+    <li><span class="box"></span><div data-en="Confirm each airline's free stroller + car seat allowance" data-es="Confirmar la franquicia gratis de carriola + silla de auto en cada aerolínea">Confirm each airline's free stroller + car seat allowance</div><span class="who">Leo</span></li>
+    <li><span class="box"></span><div data-en="Get family travel insurance (medical + trip disruption)" data-es="Contratar seguro de viaje familiar (médico + cancelación)">Get family travel insurance (medical + trip disruption)</div><span class="who" data-en="All" data-es="Todos">All</span></li>
+    <li><span class="box"></span><div data-en="Apply for UK ETA (everyone passes through London)" data-es="Tramitar la ETA del Reino Unido (todos pasan por Londres)">Apply for UK ETA (everyone passes through London)</div><span class="who">×5</span></li>
+    <li><span class="box"></span><div data-en="Submit APIS / passenger info in each Manage My Booking" data-es="Cargar datos de pasajero (APIS) en cada Manage My Booking">Submit APIS / passenger info in each Manage My Booking</div><span class="who" data-en="All" data-es="Todos">All</span></li>
+    <li><span class="box"></span><div data-en="Confirm each ticket uses the correct passport (two Miguel Ángels!)" data-es="Confirmar que cada boleto use el pasaporte correcto (¡dos Miguel Ángel!)">Confirm each ticket uses the correct passport (two Miguel Ángels!)</div><span class="who" data-en="You+Dad" data-es="Tú+Papá">You+Dad</span></li>
+    <li><span class="box"></span><div data-en="Passports valid ≥3 months beyond 22 Jul; carry Leo's birth certificate + his own passport" data-es="Pasaportes válidos ≥3 meses después del 22 jul; llevar acta de Leo + su pasaporte">Passports valid ≥3 months beyond 22 Jul; carry Leo's birth certificate + his own passport</div><span class="who" data-en="All" data-es="Todos">All</span></li>
+    <li><span class="box"></span><div data-en="Pay Quintana Roo Visitax before each return" data-es="Pagar el Visitax de Quintana Roo antes de cada regreso">Pay Quintana Roo Visitax before each return</div><span class="who" data-en="All" data-es="Todos">All</span></li>
+  </ul>
+</section>
+
+<div class="foot">
+  <span data-en="Planning aid — verify every detail in each airline's official Manage My Booking before booking. Dates flexible." data-es="Ayuda de planeación — verifica cada dato en el Manage My Booking oficial de cada aerolínea antes de reservar. Fechas flexibles.">Planning aid — verify every detail in each airline's official Manage My Booking before booking. Dates flexible.</span><br>
+  Air Europa 783ANJ · TUI 32473409 &amp; 32500177 · Air Caraïbes 7RSXUH
+</div>
+
+<script>
+/* ---------- flight getaways (all flights from Copenhagen CPH, Helsingborg's airport) ---------- */
+// cphH = flight hours Copenhagen -> getaway ; parH = flight hours getaway -> Paris
+var LON_CPH = 1.83; // London -> Copenhagen flight (then ~1h train to Helsingborg)
+var CPH_PARIS = 2.0; // Copenhagen -> Paris direct flight
+var SKIP = {id:"none",
+  en:"🛋 No getaway — most comfortable", es:"🛋 Sin escapada — lo más cómodo",
+  noteEn:"London → Helsingborg → Paris only. Frees ~2 nights → +1 night in Helsingborg and +1 in Paris. Fewest flights — easiest with Leo.",
+  noteEs:"Solo Londres → Helsingborg → París. Libera ~2 noches → +1 noche en Helsingborg y +1 en París. Menos vuelos — lo más fácil con Leo."};
+var OPTIONS = [
+  {id:"fjords", en:"Norwegian Fjords (Bergen)", es:"Fiordos Noruegos (Bergen)", vibes:["nat"], baby:3, cphH:1.33, parH:2.17,
+    seeEn:"Nærøyfjord · Flåm Railway · Bergen Bryggen · Mt Fløyen", seeEs:"Nærøyfjord · tren de Flåm · Bryggen de Bergen · monte Fløyen",
+    whyEn:"Jaw-dropping nature — but more moving around with a baby.", whyEs:"Naturaleza impresionante — pero más traslados con el bebé."},
+  {id:"swiss", en:"Switzerland (Lucerne/Interlaken)", es:"Suiza (Lucerna/Interlaken)", vibes:["nat","cla"], baby:4, cphH:1.75, parH:1.67,
+    seeEn:"Lake Lucerne · Mt Pilatus/Rigi · Interlaken & Jungfrau", seeEs:"Lago de Lucerna · Pilatus/Rigi · Interlaken y Jungfrau",
+    whyEn:"Lakes + Alps: nature AND iconic. (Parents may already do this.)", whyEs:"Lagos + Alpes: naturaleza E icónico. (Los papás quizá ya van.)"},
+  {id:"ams", en:"Amsterdam", es:"Ámsterdam", vibes:["cla"], baby:4, cphH:1.5, parH:1.42,
+    seeEn:"Canal cruise · Rijksmuseum · Vondelpark · Jordaan", seeEs:"Paseo en canal · Rijksmuseum · Vondelpark · Jordaan",
+    whyEn:"Easiest classic, short hop, big crowd-pleaser.", whyEs:"El clásico más fácil, vuelo corto, gusta a todos."},
+  {id:"prague", en:"Prague", es:"Praga", vibes:["cla"], baby:4, cphH:1.25, parH:1.83,
+    seeEn:"Old Town Square & clock · Charles Bridge · Castle", seeEs:"Plaza de la Ciudad Vieja y reloj · Puente de Carlos · Castillo",
+    whyEn:"Storybook, walkable, great value — shortest hop from CPH.", whyEs:"De cuento, caminable, gran precio — el vuelo más corto desde CPH."},
+  {id:"venice", en:"Venice", es:"Venecia", vibes:["cla"], baby:3, cphH:1.75, parH:2.0,
+    seeEn:"St Mark's Square · Grand Canal/gondola · Rialto", seeEs:"Plaza de San Marcos · Gran Canal/góndola · Rialto",
+    whyEn:"Unique & romantic — but July heat, crowds, lots of bridges.", whyEs:"Único y romántico — pero calor de julio, gentío y muchos puentes."},
+  {id:"rome", en:"Rome", es:"Roma", vibes:["cla"], baby:2, cphH:2.42, parH:2.17,
+    seeEn:"Colosseum · Vatican/St Peter's · Trevi · Pantheon", seeEs:"Coliseo · Vaticano/San Pedro · Trevi · Panteón",
+    whyEn:"Max 'wow' for Emma — but hottest & toughest with a baby in July.", whyEs:"Máximo 'wow' para Emma — pero lo más caluroso y difícil con bebé en julio."}
+];
+
+var lang = "en";
+var selected = null;
+
+function fmt(h){ var m=Math.round(h*60); return Math.floor(m/60)+"h "+("0"+(m%60)).slice(-2)+"m"; }
+function stars(n){ var s=""; for(var i=1;i<=5;i++){ s+= i<=n? "<span class='f'>★</span>":"<span class='e'>★</span>"; } return s; }
+
+function renderOpts(){
+  var html="";
+  html += "<div class='opt skipcard"+(selected==='none'?" sel":"")+"' onclick=\"pick('none')\">"
+    + "<div class='on-tag'>✓ "+(lang=="en"?"selected":"elegido")+"</div>"
+    + "<div class='nm'>"+(lang=="en"?SKIP.en:SKIP.es)+"</div>"
+    + "<div class='why'>"+(lang=="en"?SKIP.noteEn:SKIP.noteEs)+"</div>"
+    + "<div class='tt'>✈ <span class='pin'>CPH</span> → Paris "+fmt(CPH_PARIS)+" · "+(lang=="en"?"no extra stop":"sin parada extra")+"</div>"
+    + "</div>";
+  for(var i=0;i<OPTIONS.length;i++){ var o=OPTIONS[i];
+    var vb="";
+    if(o.vibes.indexOf("nat")>-1) vb+="<span class='vibe nat'>🌲 "+(lang=="en"?"nature":"naturaleza")+"</span>";
+    if(o.vibes.indexOf("cla")>-1) vb+="<span class='vibe cla'>🏛 "+(lang=="en"?"classic":"clásico")+"</span>";
+    var babyLbl = lang=="en"?"baby":"bebé";
+    html+= "<div class='opt"+(selected===o.id?" sel":"")+"' onclick=\"pick('"+o.id+"')\">"
+      + "<div class='on-tag'>✓ "+(lang=="en"?"selected":"elegido")+"</div>"
+      + "<div class='nm'>"+(lang=="en"?o.en:o.es)+"</div>"
+      + "<div class='vibes'>"+vb+"</div>"
+      + "<div class='ln'><b>"+babyLbl+":</b> <span class='stars'>"+stars(o.baby)+"</span></div>"
+      + "<div class='see'>"+(lang=="en"?o.seeEn:o.seeEs)+"</div>"
+      + "<div class='why'>"+(lang=="en"?o.whyEn:o.whyEs)+"</div>"
+      + "<div class='tt'>✈ <span class='pin'>CPH</span> → "+fmt(o.cphH)+" · → Paris "+fmt(o.parH)+"</div>"
+      + "</div>";
+  }
+  document.getElementById("opts").innerHTML=html;
+}
+
+function pick(id){ selected = (selected===id)? null : id; renderOpts(); renderRoute(); }
+
+function renderRoute(){
+  var line=document.getElementById("route-line");
+  var tot=document.getElementById("route-total");
+  var note=document.getElementById("route-note");
+  var midStrip=document.getElementById("strip-mid");
+  var names=document.querySelectorAll(".midname");
+  var t1=document.querySelector(".midt1"), t2=document.querySelector(".midt2");
+  var midRow2=document.getElementById("tr-mid2");
+  midRow2.style.display="";   // reset
+  if(!selected){
+    line.innerHTML = (lang=="en"? "London → Helsingborg → Paris" : "Londres → Helsingborg → París");
+    tot.innerHTML = (lang=="en"? "Pick a getaway — or “No getaway” — to compare." : "Elige una escapada — o «Sin escapada» — para comparar.");
+    note.innerHTML = "";
+    midStrip.textContent = (lang=="en"? "? getaway" : "? escapada");
+    for(var i=0;i<names.length;i++) names[i].textContent="—";
+    if(t1) t1.textContent="—"; if(t2) t2.textContent="—";
+    return;
+  }
+  if(selected==='none'){
+    var lon0=(lang=="en"?"London":"Londres"), par0=(lang=="en"?"Paris":"París");
+    line.innerHTML = lon0+" → Helsingborg → "+par0+" <span style='color:#6ee7a0'>("+(lang=="en"?"no getaway":"sin escapada")+")</span>";
+    var t0 = LON_CPH + CPH_PARIS;
+    tot.innerHTML = (lang=="en"?"Total flight time (back half): ":"Tiempo total de vuelo (segunda mitad): ")
+       + "<b>"+fmt(t0)+"</b> <span style='color:var(--muted)'>("+fmt(LON_CPH)+" + "+fmt(CPH_PARIS)+")</span>";
+    note.innerHTML = (lang=="en"
+       ? "Most comfortable: fewest flights, +1 night each in Helsingborg & Paris."
+       : "Lo más cómodo: menos vuelos, +1 noche en Helsingborg y en París.");
+    midStrip.textContent = (lang=="en"? "(no stop)" : "(sin parada)");
+    if(names[0]) names[0].textContent = par0;
+    if(names[1]) names[1].textContent = "";
+    if(t1) t1.textContent="~"+fmt(CPH_PARIS); if(t2) t2.textContent="—";
+    midRow2.style.display="none";
+    return;
+  }
+  var o=null; for(var j=0;j<OPTIONS.length;j++){ if(OPTIONS[j].id===selected) o=OPTIONS[j]; }
+  var nm=(lang=="en"?o.en:o.es);
+  var total = LON_CPH + o.cphH + o.parH;
+  var lon=(lang=="en"?"London":"Londres"), hb="Helsingborg", par=(lang=="en"?"Paris":"París");
+  line.innerHTML = lon+" → "+hb+" → <b style='color:var(--accent)'>"+nm+"</b> → "+par;
+  tot.innerHTML = (lang=="en"?"Total flight time (back half): ":"Tiempo total de vuelo (segunda mitad): ")
+     + "<b>"+fmt(total)+"</b> "
+     + "<span style='color:var(--muted)'>("+fmt(LON_CPH)+" + "+fmt(o.cphH)+" + "+fmt(o.parH)+")</span>";
+  note.innerHTML = (lang=="en"
+     ? "Flights via Copenhagen (CPH) — Helsingborg's airport, ~1h away."
+     : "Vuelos por Copenhague (CPH) — el aeropuerto de Helsingborg, a ~1h.");
+  midStrip.textContent = nm;
+  if(names[0]) names[0].textContent = nm;
+  if(names[1]) names[1].textContent = nm;
+  if(t1) t1.textContent="~"+fmt(o.cphH); if(t2) t2.textContent="~"+fmt(o.parH);
+}
+
+/* ---------- language toggle ---------- */
+function setLang(l){
+  lang=l;
+  document.documentElement.lang=l;
+  document.getElementById("btn-en").classList.toggle("on", l==="en");
+  document.getElementById("btn-es").classList.toggle("on", l==="es");
+  var els=document.querySelectorAll("[data-en]");
+  for(var i=0;i<els.length;i++){
+    var el=els[i];
+    var badge=el.querySelector(":scope > .pl");   // preserve place badge if present
+    el.innerHTML = el.getAttribute("data-"+l);
+    if(badge) el.appendChild(badge);
+  }
+  renderOpts(); renderRoute();
+}
+
+/* ---------- collapsible phases ---------- */
+function togglePhase(id){ document.getElementById(id).classList.toggle("collapsed"); }
+
+/* init */
+renderOpts(); renderRoute();
+</script>
+</body>
+</html>
